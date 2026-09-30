@@ -61,21 +61,25 @@ The first widget build may download the Bun executable used internally by Lustre
 │   │   └── site.css            # Tailwind source and site styles
 │   └── static/
 │       ├── favicon.svg
+│       ├── images/              # Content images copied into dist/assets
 │       ├── og.png
 │       └── pigeonops-mark.svg
 ├── content/
-│   └── posts/                  # Markdown files discovered as a collection
+│   ├── field-notes/             # First Markdown collection
+│   └── incident-reports/        # Second Markdown collection
 ├── routes/                     # Markdown tree mirrored into dist/
 │   ├── index.md                # Homepage route
 │   ├── contact/
 │   │   └── index.md
 │   ├── platform/
 │   │   └── index.md
-│   └── posts/
-│       └── index.md            # Collection index route
+│   ├── field-notes/
+│   │   └── index.md            # Field-note collection index
+│   └── incident-reports/
+│       └── index.md            # Incident-report collection index
 ├── src/
 │   ├── components.gleam        # Reusable static HTML blocks
-│   ├── post.gleam              # Shared post data type
+│   ├── collection.gleam        # Collection definitions and entry data type
 │   ├── site.gleam              # Shared HTML layout, header, and footer
 │   └── site_builder.gleam      # Markdown rendering and file generation
 ├── widgets/
@@ -116,12 +120,8 @@ dist/
 │   └── index.html
 ├── contact/
 │   └── index.html
-├── posts/
-│   ├── pigeons-and-prevailing-winds/
-│   │   └── index.html
-│   ├── the-statue-incident-report/
-│   │   └── index.html
-│   └── index.html
+├── field-notes/                 # Generated field-note index and entries
+├── incident-reports/            # Generated incident index and entries
 └── index.html
 ```
 
@@ -158,9 +158,17 @@ For example, `routes/about/index.md` automatically becomes `dist/about/index.htm
 
 ## Collections
 
-Files in `content/posts/` form the first collection. The builder discovers every Markdown file in that directory, uses each filename as its URL slug, sorts posts newest-first by their required ISO `published` date, and generates an individual page beneath `dist/posts/`.
+`src/collection.gleam` defines each collection's source directory, public route, listing placeholder, and item label. The builder loads every configured collection through the same pipeline and generates its entries beneath the collection's route.
 
-The same in-memory post list expands the `{{ post-list }}` placeholder in `routes/posts/index.md`. Adding a post therefore requires only a Markdown file with `title`, `description`, and `published` frontmatter; no build-script entry is needed.
+Every entry requires `title`, `description`, `published`, `featured_image`, and `featured_alt` frontmatter. Entries are sorted newest-first. The collection index receives its configured listing placeholder, while `{{ featured-image }}` places the entry's featured image within its Markdown body.
+
+Adding another collection means adding one `Collection` value, its content directory, and an index route containing the configured placeholder. No collection-specific builder function is required.
+
+## Content images
+
+Content images live under `assets/static/images/` and are referenced with root-relative URLs such as `/assets/images/homing-pigeon.webp`. The current images were manually resized and converted to WebP before being committed; their sources and licenses are recorded in `IMAGE_CREDITS.md`.
+
+An automatic image pipeline is intentionally deferred. A future version can generate multiple widths and formats and have the featured-image component emit `srcset` without changing collection content.
 
 ## Deployment
 

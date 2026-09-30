@@ -1,7 +1,7 @@
+import collection.{type Entry, Entry}
 import gleam/int
 import gleam/list
 import gleam/string
-import post.{type Post, Post}
 import site
 
 pub fn contact_form() -> String {
@@ -33,32 +33,66 @@ pub fn contact_form() -> String {
   </form>"
 }
 
-pub fn post_list(posts: List(Post)) -> String {
+pub fn collection_list(
+  route: String,
+  item_label: String,
+  entries: List(Entry),
+) -> String {
   let cards =
-    posts
-    |> list.map(fn(post) {
-      let Post(slug:, title:, description:, published:, ..) = post
-      "<article>
-        " <> post_date(published) <> "
-        <h2><a href='/posts/" <> slug <> "/'>" <> site.escape_html(title) <> "</a></h2>
+    entries
+    |> list.map(fn(entry) {
+      let Entry(
+        slug:,
+        title:,
+        description:,
+        published:,
+        featured_image:,
+        featured_alt:,
+        ..,
+      ) = entry
+      "<article class='group'>
+        <a class='entry-image' href='/" <> route <> "/" <> slug <> "/' tabindex='-1'>
+          <img src='" <> site.escape_html(featured_image) <> "' alt='" <> site.escape_html(
+        featured_alt,
+      ) <> "' loading='lazy'>
+        </a>
+        <div class='entry-card-copy'>
+        " <> published_date(published) <> "
+        <h2><a href='/" <> route <> "/" <> slug <> "/'>" <> site.escape_html(
+        title,
+      ) <> "</a></h2>
         <p>" <> site.escape_html(description) <> "</p>
-        <a class='post-link' href='/posts/" <> slug <> "/'>Read field note <span aria-hidden='true'>→</span></a>
+        <a class='entry-link' href='/" <> route <> "/" <> slug <> "/'>Read " <> item_label <> " <span aria-hidden='true'>→</span></a>
+        </div>
       </article>"
     })
     |> string.join("\n")
 
-  "<div class='post-list'>" <> cards <> "</div>"
+  "<div class='collection-list'>" <> cards <> "</div>"
 }
 
-pub fn post_meta(published: String) -> String {
-  "<div class='post-meta'>
-    <a class='back-link' href='/posts/'>← All field notes</a>
-    " <> post_date(published) <> "
+pub fn entry_meta(
+  route: String,
+  item_label: String,
+  published: String,
+) -> String {
+  "<div class='entry-meta'>
+    <a class='back-link' href='/" <> route <> "/'>← All " <> item_label <> "s</a>
+    " <> published_date(published) <> "
   </div>"
 }
 
-fn post_date(published: String) -> String {
-  "<p class='post-date'><time datetime='"
+pub fn featured_image(entry: Entry) -> String {
+  let Entry(featured_image:, featured_alt:, ..) = entry
+  "<figure class='featured-image'>
+    <img src='" <> site.escape_html(featured_image) <> "' alt='" <> site.escape_html(
+    featured_alt,
+  ) <> "'>
+  </figure>"
+}
+
+fn published_date(published: String) -> String {
+  "<p class='published-date'><time datetime='"
   <> site.escape_html(published)
   <> "'>"
   <> format_date(published)

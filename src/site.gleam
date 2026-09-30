@@ -54,7 +54,8 @@ fn header() -> String {
         <nav class='hidden items-center gap-7 text-sm text-zinc-600 sm:flex' aria-label='Main navigation'>
           <a class='transition hover:text-zinc-950' href='/platform/'>Platform</a>
           <a class='transition hover:text-zinc-950' href='/#results'>Results</a>
-          <a class='transition hover:text-zinc-950' href='/posts/'>Field notes</a>
+          <a class='transition hover:text-zinc-950' href='/field-notes/'>Field notes</a>
+          <a class='transition hover:text-zinc-950' href='/incident-reports/'>Incidents</a>
           <a class='transition hover:text-zinc-950' href='/contact/'>Contact</a>
         </nav>
         <span class='rounded-full border border-zinc-900/10 bg-white px-3 py-1.5 text-xs font-medium text-zinc-600 shadow-sm'>All systems coo</span>

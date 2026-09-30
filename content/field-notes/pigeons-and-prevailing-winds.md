@@ -2,9 +2,13 @@
 title: Pigeons and prevailing winds
 description: What dispatchers should know before assigning a northern route on a blustery afternoon.
 published: 2026-09-24
+featured_image: /assets/images/homing-pigeon.webp
+featured_alt: A homing pigeon standing alert beside its loft
 ---
 
 # Pigeons and prevailing winds
+
+{{ featured-image }}
 
 Route planning gets complicated when half your workforce can feel a pressure change in their feathers and the other half is distracted by a newly opened bakery.
 

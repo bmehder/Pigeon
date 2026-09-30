@@ -1,10 +1,10 @@
+import collection.{type Collection, type Entry, Collection, Entry}
 import components
 import gleam/int
 import gleam/io
 import gleam/list
 import gleam/string
 import mork
-import post.{type Post, Post}
 import simplifile
 import site
 
@@ -12,25 +12,38 @@ type Document {
   Document(title: String, description: String, markdown: String)
 }
 
+type LoadedCollection {
+  LoadedCollection(config: Collection, entries: List(Entry))
+}
+
 pub fn main() -> Nil {
-  let posts = load_posts()
-  let replacements = [
-    #("{{ contact-form }}", components.contact_form()),
-    #("{{ post-list }}", components.post_list(posts)),
-  ]
+  prepare_output()
+  let collections = collection.all() |> list.map(load_collection)
+  let collection_replacements = collections |> list.map(collection_replacement)
+  let replacements =
+    list.append(
+      [#("{{ contact-form }}", components.contact_form())],
+      collection_replacements,
+    )
   let routes = load_routes()
 
   list.each(routes, build_route(_, replacements))
-  list.each(posts, build_post(_, replacements))
+  list.each(collections, build_collection(_, replacements))
   copy_static_assets()
 
   io.println(
     "Generated "
     <> int.to_string(list.length(routes))
     <> " routes, "
-    <> int.to_string(list.length(posts))
-    <> " posts, and static assets in dist/",
+    <> int.to_string(entry_count(collections))
+    <> " collection entries, and static assets in dist/",
   )
+}
+
+fn prepare_output() -> Nil {
+  let assert Ok(Nil) = simplifile.create_directory_all("dist")
+  let assert Ok(Nil) = simplifile.clear_directory(at: "dist")
+  Nil
 }
 
 fn copy_static_assets() -> Nil {
@@ -70,34 +83,71 @@ fn output_directory(output: String) -> String {
   |> string.join("/")
 }
 
-fn load_posts() -> List(Post) {
-  let assert Ok(filenames) = simplifile.read_directory(at: "content/posts")
+fn load_collection(config: Collection) -> LoadedCollection {
+  let Collection(source_directory:, ..) = config
+  let assert Ok(filenames) = simplifile.read_directory(at: source_directory)
 
-  filenames
-  |> list.filter(string.ends_with(_, ".md"))
-  |> list.sort(string.compare)
-  |> list.map(load_post)
-  |> list.sort(by: newest_first)
+  let entries =
+    filenames
+    |> list.filter(string.ends_with(_, ".md"))
+    |> list.sort(string.compare)
+    |> list.map(load_entry(config, _))
+    |> list.sort(by: newest_first)
+
+  LoadedCollection(config:, entries:)
 }
 
-fn load_post(filename: String) -> Post {
-  let assert Ok(source) = simplifile.read(from: "content/posts/" <> filename)
+fn load_entry(config: Collection, filename: String) -> Entry {
+  let Collection(source_directory:, ..) = config
+  let assert Ok(source) =
+    simplifile.read(from: source_directory <> "/" <> filename)
   let slug = string.drop_end(filename, 3)
   let Document(title:, description:, markdown:) = parse_document(source)
   let #(frontmatter, _) = mork.split_frontmatter_from_input(source)
   let assert Ok(published) = frontmatter_value(frontmatter, "published")
-  Post(slug:, title:, description:, published:, markdown:)
+  let assert Ok(featured_image) =
+    frontmatter_value(frontmatter, "featured_image")
+  let assert Ok(featured_alt) = frontmatter_value(frontmatter, "featured_alt")
+  Entry(
+    slug:,
+    title:,
+    description:,
+    published:,
+    featured_image:,
+    featured_alt:,
+    markdown:,
+  )
 }
 
-fn build_post(post: Post, replacements: List(#(String, String))) -> Nil {
-  let Post(slug:, title:, description:, published:, markdown:) = post
-  let output_directory = "dist/posts/" <> slug
-  let post_html =
-    markdown |> expand_components(replacements) |> mork.parse |> mork.to_html
+fn build_collection(
+  loaded: LoadedCollection,
+  replacements: List(#(String, String)),
+) -> Nil {
+  let LoadedCollection(config:, entries:) = loaded
+  list.each(entries, build_entry(config, _, replacements))
+}
+
+fn build_entry(
+  config: Collection,
+  entry: Entry,
+  replacements: List(#(String, String)),
+) -> Nil {
+  let Collection(route:, item_label:, ..) = config
+  let Entry(slug:, title:, description:, published:, markdown:, ..) = entry
+  let output_directory = "dist/" <> route <> "/" <> slug
+  let entry_replacements = [
+    #("{{ featured-image }}", components.featured_image(entry)),
+    ..replacements
+  ]
+  let entry_html =
+    markdown
+    |> expand_components(entry_replacements)
+    |> mork.parse
+    |> mork.to_html
   let content =
-    "<article class='post-content'>"
-    <> components.post_meta(published)
-    <> post_html
+    "<article class='entry-content'>"
+    <> components.entry_meta(route, item_label, published)
+    <> entry_html
     <> "</article>"
   let html = site.page(title, description, content)
 
@@ -107,9 +157,25 @@ fn build_post(post: Post, replacements: List(#(String, String))) -> Nil {
   Nil
 }
 
-fn newest_first(a: Post, b: Post) {
-  let Post(published: a_date, ..) = a
-  let Post(published: b_date, ..) = b
+fn collection_replacement(loaded: LoadedCollection) -> #(String, String) {
+  let LoadedCollection(
+    config: Collection(route:, placeholder:, item_label:, ..),
+    entries:,
+  ) = loaded
+  #(placeholder, components.collection_list(route, item_label, entries))
+}
+
+fn entry_count(collections: List(LoadedCollection)) -> Int {
+  collections
+  |> list.fold(0, fn(total, loaded) {
+    let LoadedCollection(entries:, ..) = loaded
+    total + list.length(entries)
+  })
+}
+
+fn newest_first(a: Entry, b: Entry) {
+  let Entry(published: a_date, ..) = a
+  let Entry(published: b_date, ..) = b
   string.compare(b_date, a_date)
 }
 

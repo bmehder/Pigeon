@@ -2,9 +2,13 @@
 title: The statue incident report
 description: Four avoidable causes of delays near monuments, fountains, and unattended sandwiches.
 published: 2026-09-29
+featured_image: /assets/images/white-homing-pigeon.webp
+featured_alt: A white homing pigeon standing in profile
 ---
 
 # The statue incident report
+
+{{ featured-image }}
 
 Statues appear dependable. They do not move, complain, or reschedule deliveries. Unfortunately, this makes them extremely attractive places for a pigeon to hold an unscheduled meeting.
 
