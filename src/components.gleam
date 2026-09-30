@@ -1,4 +1,4 @@
-import collection.{type Entry, Entry}
+import collections.{type Entry, Entry}
 import gleam/int
 import gleam/list
 import gleam/string

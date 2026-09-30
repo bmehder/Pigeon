@@ -14,6 +14,11 @@ PigeonOps brings routes, couriers, weather, and snack expenditure into one excep
   Every screen works with the instincts pigeons already have. No tiny keyboards required.
 </aside>
 
+<figure class='platform-image'>
+  <img src='/assets/images/homing-pigeon.webp' alt='A homing pigeon standing alert beside its loft' width='1000' height='750'>
+  <figcaption>The field hardware requires no charging cable and remains highly motivated by lunch.</figcaption>
+</figure>
+
 ---
 
 ## Routes that understand the sky

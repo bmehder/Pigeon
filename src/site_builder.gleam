@@ -1,4 +1,4 @@
-import collection.{type Collection, type Entry, Collection, Entry}
+import collections.{type Collection, type Entry, Collection, Entry}
 import components
 import gleam/int
 import gleam/io
@@ -9,7 +9,12 @@ import simplifile
 import site
 
 type Document {
-  Document(title: String, description: String, markdown: String)
+  Document(
+    title: String,
+    description: String,
+    indexable: Bool,
+    markdown: String,
+  )
 }
 
 type LoadedCollection {
@@ -18,7 +23,7 @@ type LoadedCollection {
 
 pub fn main() -> Nil {
   prepare_output()
-  let collections = collection.all() |> list.map(load_collection)
+  let collections = collections.all() |> list.map(load_collection)
   let collection_replacements = collections |> list.map(collection_replacement)
   let replacements =
     list.append(
@@ -27,8 +32,9 @@ pub fn main() -> Nil {
     )
   let routes = load_routes()
 
-  list.each(routes, build_route(_, replacements))
+  list.each(routes, build_route(_, replacements, collections))
   list.each(collections, build_collection(_, replacements))
+  write_discovery_files(routes, collections)
   copy_static_assets()
 
   io.println(
@@ -60,20 +66,63 @@ fn load_routes() -> List(String) {
   |> list.sort(string.compare)
 }
 
-fn build_route(source: String, replacements: List(#(String, String))) -> Nil {
+fn build_route(
+  source: String,
+  replacements: List(#(String, String)),
+  loaded_collections: List(LoadedCollection),
+) -> Nil {
   let assert Ok(document) = simplifile.read(from: source)
-  let Document(title:, description:, markdown:) = parse_document(document)
+  let Document(title:, description:, indexable:, markdown:) =
+    parse_document(document)
   let relative_path = string.drop_start(source, 7)
   let output = "dist/" <> string.drop_end(relative_path, 3) <> ".html"
   let output_directory = output_directory(output)
 
   let content =
     markdown |> expand_components(replacements) |> mork.parse |> mork.to_html
-  let html = site.page(title, description, content)
+  let path = route_path(relative_path)
+  let html =
+    site.page(
+      site.Metadata(
+        title:,
+        description:,
+        path:,
+        image: "/assets/og.png",
+        page_type: "website",
+        indexable: indexable && route_is_indexable(path, loaded_collections),
+      ),
+      content,
+    )
 
   let assert Ok(Nil) = simplifile.create_directory_all(output_directory)
   let assert Ok(Nil) = simplifile.write(to: output, contents: html)
   Nil
+}
+
+fn route_path(relative_path: String) -> String {
+  case relative_path {
+    "index.md" -> "/"
+    "404.md" -> "/404.html"
+    path -> "/" <> string.drop_end(path, 8)
+  }
+}
+
+fn route_is_indexable(
+  path: String,
+  loaded_collections: List(LoadedCollection),
+) -> Bool {
+  case path == "/404.html" {
+    True -> False
+    False ->
+      loaded_collections
+      |> list.fold(True, fn(indexable, loaded) {
+        let LoadedCollection(
+          config: Collection(route:, indexable: collection_indexable, ..),
+          ..,
+        ) = loaded
+        indexable && { path != "/" <> route <> "/" || collection_indexable }
+      })
+  }
 }
 
 fn output_directory(output: String) -> String {
@@ -98,11 +147,13 @@ fn load_collection(config: Collection) -> LoadedCollection {
 }
 
 fn load_entry(config: Collection, filename: String) -> Entry {
-  let Collection(source_directory:, ..) = config
+  let Collection(source_directory:, indexable: collection_indexable, ..) =
+    config
   let assert Ok(source) =
     simplifile.read(from: source_directory <> "/" <> filename)
   let slug = string.drop_end(filename, 3)
-  let Document(title:, description:, markdown:) = parse_document(source)
+  let Document(title:, description:, indexable:, markdown:) =
+    parse_document(source)
   let #(frontmatter, _) = mork.split_frontmatter_from_input(source)
   let assert Ok(published) = frontmatter_value(frontmatter, "published")
   let assert Ok(featured_image) =
@@ -115,6 +166,7 @@ fn load_entry(config: Collection, filename: String) -> Entry {
     published:,
     featured_image:,
     featured_alt:,
+    indexable: collection_indexable && indexable,
     markdown:,
   )
 }
@@ -149,12 +201,78 @@ fn build_entry(
     <> components.entry_meta(route, item_label, published)
     <> entry_html
     <> "</article>"
-  let html = site.page(title, description, content)
+  let path = "/" <> route <> "/" <> slug <> "/"
+  let Entry(featured_image:, indexable:, ..) = entry
+  let html =
+    site.page(
+      site.Metadata(
+        title:,
+        description:,
+        path:,
+        image: featured_image,
+        page_type: "article",
+        indexable:,
+      ),
+      content,
+    )
 
   let assert Ok(Nil) = simplifile.create_directory_all(output_directory)
   let assert Ok(Nil) =
     simplifile.write(to: output_directory <> "/index.html", contents: html)
   Nil
+}
+
+fn write_discovery_files(
+  routes: List(String),
+  loaded_collections: List(LoadedCollection),
+) -> Nil {
+  let route_urls =
+    routes
+    |> list.filter(fn(source) {
+      let assert Ok(contents) = simplifile.read(from: source)
+      let Document(indexable:, ..) = parse_document(contents)
+      let path = route_path(string.drop_start(source, 7))
+      indexable && route_is_indexable(path, loaded_collections)
+    })
+    |> list.map(fn(source) { route_path(string.drop_start(source, 7)) })
+    |> list.map(sitemap_url(_, ""))
+  let entry_urls =
+    loaded_collections
+    |> list.flat_map(fn(loaded) {
+      let LoadedCollection(config: Collection(route:, ..), entries:) = loaded
+      entries
+      |> list.filter(fn(entry) {
+        let Entry(indexable:, ..) = entry
+        indexable
+      })
+      |> list.map(fn(entry) {
+        let Entry(slug:, published:, ..) = entry
+        sitemap_url("/" <> route <> "/" <> slug <> "/", published)
+      })
+    })
+  let sitemap =
+    "<?xml version='1.0' encoding='UTF-8'?>\n<urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>\n"
+    <> string.join(list.append(route_urls, entry_urls), "\n")
+    <> "\n</urlset>\n"
+  let robots =
+    "User-agent: *\nAllow: /\n\nSitemap: " <> site.base_url <> "/sitemap.xml\n"
+  let assert Ok(Nil) =
+    simplifile.write(to: "dist/sitemap.xml", contents: sitemap)
+  let assert Ok(Nil) = simplifile.write(to: "dist/robots.txt", contents: robots)
+  Nil
+}
+
+fn sitemap_url(path: String, last_modified: String) -> String {
+  let lastmod = case last_modified {
+    "" -> ""
+    date -> "\n    <lastmod>" <> date <> "</lastmod>"
+  }
+  "  <url>\n    <loc>"
+  <> site.base_url
+  <> path
+  <> "</loc>"
+  <> lastmod
+  <> "\n  </url>"
 }
 
 fn collection_replacement(loaded: LoadedCollection) -> #(String, String) {
@@ -183,7 +301,8 @@ fn parse_document(source: String) -> Document {
   let #(frontmatter, markdown) = mork.split_frontmatter_from_input(source)
   let assert Ok(title) = frontmatter_value(frontmatter, "title")
   let assert Ok(description) = frontmatter_value(frontmatter, "description")
-  Document(title:, description:, markdown:)
+  let indexable = !frontmatter_flag(frontmatter, "noindex")
+  Document(title:, description:, indexable:, markdown:)
 }
 
 fn expand_components(
@@ -210,4 +329,11 @@ fn frontmatter_value(frontmatter: String, key: String) -> Result(String, Nil) {
       _ -> Error(Nil)
     }
   })
+}
+
+fn frontmatter_flag(frontmatter: String, key: String) -> Bool {
+  case frontmatter_value(frontmatter, key) {
+    Ok(value) -> string.lowercase(value) == "true"
+    Error(_) -> False
+  }
 }
