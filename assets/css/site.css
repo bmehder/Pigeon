@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @source "../../src";
-@source "../../pages";
+@source "../../routes";
 @source "../../widgets/src";
 
 @theme {

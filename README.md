@@ -65,14 +65,16 @@ The first widget build may download the Bun executable used internally by Lustre
 │       └── pigeonops-mark.svg
 ├── content/
 │   └── posts/                  # Markdown files discovered as a collection
-├── pages/
-│   ├── index.md                # Homepage content
-│   ├── contact.md              # Contact page and form markup
-│   ├── platform.md             # Platform page content
-│   └── posts.md                # Collection index content
+├── routes/                     # Markdown tree mirrored into dist/
+│   ├── index.md                # Homepage route
+│   ├── contact/
+│   │   └── index.md
+│   ├── platform/
+│   │   └── index.md
+│   └── posts/
+│       └── index.md            # Collection index route
 ├── src/
 │   ├── components.gleam        # Reusable static HTML blocks
-│   ├── config.gleam            # Explicit standalone page configuration
 │   ├── post.gleam              # Shared post data type
 │   ├── site.gleam              # Shared HTML layout, header, and footer
 │   └── site_builder.gleam      # Markdown rendering and file generation
@@ -144,21 +146,21 @@ The homepage contains one mount point and one page-specific module script:
 
 `widgets/src/dispatch.gleam` defines its own model, messages, update function, and view. Lustre replaces and manages only that element. The platform page does not load the widget bundle.
 
-## Adding another page
+## Adding another route
 
-Standalone pages are intentionally explicit:
+Routes mirror their generated URL beneath `routes/`:
 
-1. Add a Markdown file beneath `pages/`.
-2. Add one `Page` entry to `src/config.gleam` with its source and output path.
+1. Add an `index.md` file at the desired path beneath `routes/`.
+2. Include `title` and `description` frontmatter.
 3. Add navigation to it where appropriate.
 
-That repetition is intentional for now. It keeps the mechanism obvious until the project has enough pages to justify metadata parsing or automatic discovery.
+For example, `routes/about/index.md` automatically becomes `dist/about/index.html`. No Gleam configuration entry is required.
 
 ## Collections
 
 Files in `content/posts/` form the first collection. The builder discovers every Markdown file in that directory, sorts the filenames, uses each filename as its URL slug, and generates an individual page beneath `dist/posts/`.
 
-The same in-memory post list expands the `{{ post-list }}` placeholder in `pages/posts.md`. Adding a post therefore requires only a Markdown file with `title` and `description` frontmatter; no build-script entry is needed.
+The same in-memory post list expands the `{{ post-list }}` placeholder in `routes/posts/index.md`. Adding a post therefore requires only a Markdown file with `title` and `description` frontmatter; no build-script entry is needed.
 
 ## Deployment
 
