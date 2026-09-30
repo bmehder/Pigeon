@@ -16,8 +16,15 @@ pub fn main() -> Nil {
     output: "dist/platform/index.html",
     title: "Platform — PigeonOps",
   )
+  copy_static_assets()
 
-  io.println("Generated 2 pages in dist/")
+  io.println("Generated 2 pages and static assets in dist/")
+}
+
+fn copy_static_assets() -> Nil {
+  let assert Ok(Nil) =
+    simplifile.copy_directory(at: "assets/static", to: "dist/assets")
+  Nil
 }
 
 fn build_page(

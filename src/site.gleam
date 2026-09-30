@@ -5,6 +5,16 @@ pub fn page(title: String, content: String) -> String {
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <title>" <> title <> "</title>
+    <meta name='description' content='Precision logistics software for ambitious urban pigeons.'>
+    <meta property='og:title' content='" <> title <> "'>
+    <meta property='og:description' content='Precision logistics software for ambitious urban pigeons.'>
+    <meta property='og:type' content='website'>
+    <meta property='og:image' content='https://pigeonops.bmehder.chatgpt.site/assets/og.png'>
+    <meta name='twitter:card' content='summary_large_image'>
+    <meta name='twitter:title' content='" <> title <> "'>
+    <meta name='twitter:description' content='Precision logistics software for ambitious urban pigeons.'>
+    <meta name='twitter:image' content='https://pigeonops.bmehder.chatgpt.site/assets/og.png'>
+    <link rel='icon' href='/assets/favicon.svg' type='image/svg+xml'>
     <link rel='stylesheet' href='/assets/site.css'>
   </head>
   <body class='min-h-screen bg-stone-50 font-sans text-zinc-950 antialiased'>
@@ -23,7 +33,7 @@ fn header() -> String {
   "<header class='border-b border-zinc-900/10 bg-stone-50/90 backdrop-blur'>
       <div class='mx-auto flex h-[76px] max-w-6xl items-center justify-between px-6 sm:px-8 lg:px-10'>
         <a class='flex items-center gap-3 font-semibold tracking-tight' href='/'>
-          <span class='grid size-9 place-items-center rounded-xl bg-orange-500 text-sm font-bold text-white shadow-sm'>P</span>
+          <img class='size-9 rounded-xl shadow-sm' src='/assets/pigeonops-mark.svg' alt='' width='36' height='36'>
           PigeonOps
         </a>
         <nav class='hidden items-center gap-7 text-sm text-zinc-600 sm:flex' aria-label='Main navigation'>
