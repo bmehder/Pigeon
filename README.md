@@ -1,10 +1,10 @@
-# Mews
+# Docklands
 
 A small, content-first static-site starter built with Gleam, Markdown, Tailwind CSS, and optional Lustre islands.
 
 **Demo site:** [PigeonOps](https://pigeonops.bmehder.chatgpt.site)
 
-Mews is an intentionally small reference project for using Gleam as a straightforward static-site build tool without turning the entire website into a single-page application. PigeonOps—the included demo—is a deliberately absurd fictional product offering precision logistics software for ambitious urban pigeons.
+Docklands is an intentionally small reference project for using Gleam as a straightforward static-site build tool without turning the entire website into a single-page application. PigeonOps—the included demo—is a deliberately absurd fictional product offering precision logistics software for ambitious urban pigeons.
 
 ## Philosophy
 
@@ -80,7 +80,7 @@ The first widget build may download the Bun executable used internally by Lustre
 │   ├── components.gleam        # Reusable static HTML blocks
 │   ├── collections.gleam       # Collection definitions and entry data type
 │   ├── site.gleam              # Shared HTML layout, header, and footer
-│   └── mews.gleam              # Markdown rendering and file generation
+│   └── docklands.gleam         # Markdown rendering and file generation
 ├── widgets/
 │   ├── src/
 │   │   └── dispatch.gleam      # Isolated Lustre application
