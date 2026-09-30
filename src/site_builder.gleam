@@ -4,15 +4,12 @@ import gleam/io
 import gleam/list
 import gleam/string
 import mork
+import post.{type Post, Post}
 import simplifile
 import site
 
 type Document {
   Document(title: String, description: String, markdown: String)
-}
-
-type Post {
-  Post(slug: String, document: Document)
 }
 
 pub fn main() -> Nil {
@@ -91,11 +88,12 @@ fn load_posts() -> List(Post) {
 fn load_post(filename: String) -> Post {
   let assert Ok(source) = simplifile.read(from: "content/posts/" <> filename)
   let slug = string.drop_end(filename, 3)
-  Post(slug:, document: parse_document(source))
+  let Document(title:, description:, markdown:) = parse_document(source)
+  Post(slug:, title:, description:, markdown:)
 }
 
 fn build_post(post: Post) -> Nil {
-  let Post(slug:, document: Document(title:, description:, markdown:)) = post
+  let Post(slug:, title:, description:, markdown:) = post
   let output_directory = "dist/posts/" <> slug
   let post_html =
     markdown |> expand_components([]) |> mork.parse |> mork.to_html
@@ -118,23 +116,7 @@ fn parse_document(source: String) -> Document {
 fn expand_components(markdown: String, posts: List(Post)) -> String {
   markdown
   |> string.replace("{{ contact-form }}", components.contact_form())
-  |> string.replace("{{ post-list }}", post_list(posts))
-}
-
-fn post_list(posts: List(Post)) -> String {
-  let cards =
-    posts
-    |> list.map(fn(post) {
-      let Post(slug:, document: Document(title:, description:, ..)) = post
-      "<article>
-        <h2><a href='/posts/" <> slug <> "/'>" <> site.escape_html(title) <> "</a></h2>
-        <p>" <> site.escape_html(description) <> "</p>
-        <a class='post-link' href='/posts/" <> slug <> "/'>Read field note <span aria-hidden='true'>→</span></a>
-      </article>"
-    })
-    |> string.join("\n")
-
-  "<div class='post-list'>" <> cards <> "</div>"
+  |> string.replace("{{ post-list }}", components.post_list(posts))
 }
 
 fn frontmatter_value(frontmatter: String, key: String) -> Result(String, Nil) {

@@ -72,6 +72,7 @@ The first widget build may download the Bun executable used internally by Lustre
 │   └── posts.md                # Collection index content
 ├── src/
 │   ├── components.gleam        # Reusable static HTML blocks
+│   ├── post.gleam              # Shared post data type
 │   ├── site.gleam              # Shared HTML layout, header, and footer
 │   └── site_builder.gleam      # Markdown rendering and file generation
 ├── widgets/

@@ -1,3 +1,8 @@
+import gleam/list
+import gleam/string
+import post.{type Post, Post}
+import site
+
 pub fn contact_form() -> String {
   "<form class='contact-form'>
     <div class='form-field'>
@@ -25,4 +30,20 @@ pub fn contact_form() -> String {
     <button class='primary-button' type='submit' disabled>Send to the loft</button>
     <p class='form-note'>The form looks the part, but it is not connected to a submission service yet.</p>
   </form>"
+}
+
+pub fn post_list(posts: List(Post)) -> String {
+  let cards =
+    posts
+    |> list.map(fn(post) {
+      let Post(slug:, title:, description:, ..) = post
+      "<article>
+        <h2><a href='/posts/" <> slug <> "/'>" <> site.escape_html(title) <> "</a></h2>
+        <p>" <> site.escape_html(description) <> "</p>
+        <a class='post-link' href='/posts/" <> slug <> "/'>Read field note <span aria-hidden='true'>→</span></a>
+      </article>"
+    })
+    |> string.join("\n")
+
+  "<div class='post-list'>" <> cards <> "</div>"
 }
