@@ -1,5 +1,5 @@
 {
-  "name": "docklands",
+  "name": "pigeonops-site",
   "private": true,
   "scripts": {
     "build": "gleam run && npm run build:images && npm run build:widget && npm run build:css",

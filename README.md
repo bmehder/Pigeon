@@ -1,10 +1,14 @@
-# Docklands
+<p align="center">
+  <img src="assets/static/pigeonops-mark.svg" width="72" height="72" alt="PigeonOps logo">
+</p>
 
-A small, content-first static-site starter built with Gleam, Markdown, Tailwind CSS, and optional Lustre islands.
+# PigeonOps
 
-**Demo site:** [PigeonOps](https://pigeonops.bmehder.chatgpt.site)
+A small, mostly-static website built with Gleam, Markdown, Tailwind CSS, and one isolated Lustre widget.
 
-Docklands is an intentionally small reference project for using Gleam as a straightforward static-site build tool without turning the entire website into a single-page application. PigeonOps—the included demo—is a deliberately absurd fictional product offering precision logistics software for ambitious urban pigeons.
+**Live site:** [pigeonops.bmehder.chatgpt.site](https://pigeonops.bmehder.chatgpt.site)
+
+PigeonOps is a deliberately absurd fictional product: precision logistics software for ambitious urban pigeons. The implementation demonstrates using Gleam as a straightforward static-site build tool without turning the entire website into a single-page application.
 
 ## Philosophy
 
@@ -80,7 +84,7 @@ The first widget build may download the Bun executable used internally by Lustre
 │   ├── components.gleam        # Reusable static HTML blocks
 │   ├── collections.gleam       # Collection definitions and entry data type
 │   ├── site.gleam              # Shared HTML layout, header, and footer
-│   └── docklands.gleam         # Markdown rendering and file generation
+│   └── pigeonops.gleam         # Markdown rendering and file generation
 ├── widgets/
 │   ├── src/
 │   │   └── dispatch.gleam      # Isolated Lustre application
