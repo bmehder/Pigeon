@@ -63,11 +63,15 @@ The first widget build may download the Bun executable used internally by Lustre
 │       ├── favicon.svg
 │       ├── og.png
 │       └── pigeonops-mark.svg
+├── content/
+│   └── posts/                  # Markdown files discovered as a collection
 ├── pages/
 │   ├── index.md                # Homepage content
 │   ├── contact.md              # Contact page and form markup
-│   └── platform.md             # Platform page content
+│   ├── platform.md             # Platform page content
+│   └── posts.md                # Collection index content
 ├── src/
+│   ├── components.gleam        # Reusable static HTML blocks
 │   ├── site.gleam              # Shared HTML layout, header, and footer
 │   └── site_builder.gleam      # Markdown rendering and file generation
 ├── widgets/
@@ -108,12 +112,22 @@ dist/
 │   └── index.html
 ├── contact/
 │   └── index.html
+├── posts/
+│   ├── pigeons-and-prevailing-winds/
+│   │   └── index.html
+│   ├── the-statue-incident-report/
+│   │   └── index.html
+│   └── index.html
 └── index.html
 ```
 
 ## Markdown and raw HTML
 
 Mörk handles the Markdown-to-HTML conversion. Normal prose, headings, lists, emphasis, separators, and blockquotes remain Markdown. Raw HTML is used for layout-heavy pieces such as the dashboard mockup, feature grid, and Lustre mount point.
+
+Every page starts with required `title` and `description` frontmatter. The builder uses those values for the document title and social metadata, so page metadata lives alongside its content rather than in the build script.
+
+Reusable static blocks use explicit placeholders such as `{{ contact-form }}`. The builder replaces those placeholders with HTML from `src/components.gleam` before parsing the Markdown. The mapping remains intentionally explicit; there is no general template language.
 
 The project deliberately does not introduce an HTML DSL for the entire site. Shared document chrome lives in readable string templates in `src/site.gleam`.
 
@@ -130,13 +144,19 @@ The homepage contains one mount point and one page-specific module script:
 
 ## Adding another page
 
-Page discovery and front matter have not been added. A page is currently explicit:
+Standalone pages are intentionally explicit:
 
 1. Add a Markdown file beneath `pages/`.
-2. Add one `build_page` call in `src/site_builder.gleam` with its source, title, and output path.
+2. Add one `build_page` call in `src/site_builder.gleam` with its source and output path.
 3. Add navigation to it where appropriate.
 
 That repetition is intentional for now. It keeps the mechanism obvious until the project has enough pages to justify metadata parsing or automatic discovery.
+
+## Collections
+
+Files in `content/posts/` form the first collection. The builder discovers every Markdown file in that directory, sorts the filenames, uses each filename as its URL slug, and generates an individual page beneath `dist/posts/`.
+
+The same in-memory post list expands the `{{ post-list }}` placeholder in `pages/posts.md`. Adding a post therefore requires only a Markdown file with `title` and `description` frontmatter; no build-script entry is needed.
 
 ## Deployment
 

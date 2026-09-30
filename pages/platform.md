@@ -1,3 +1,8 @@
+---
+title: Platform — PigeonOps
+description: Routing, flock coordination, and crumb intelligence for pigeon delivery operators.
+---
+
 <p class='eyebrow'>Inside the command center</p>
 
 # Dispatch without the rooftop shouting.
@@ -38,4 +43,3 @@ PigeonOps turns millions of tiny journeys into decisions your team can use: whic
   <span>You may as well put it to work.</span>
   <a class='primary-button' href='/'>Return to the overview <span aria-hidden='true'>→</span></a>
 </div>
-

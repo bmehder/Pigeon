@@ -1,30 +1,55 @@
+import components
+import gleam/int
 import gleam/io
+import gleam/list
+import gleam/string
 import mork
 import simplifile
 import site
 
+type Document {
+  Document(title: String, description: String, markdown: String)
+}
+
+type Post {
+  Post(slug: String, document: Document)
+}
+
 pub fn main() -> Nil {
+  let posts = load_posts()
+
   build_page(
     source: "pages/index.md",
     output_directory: "dist",
     output: "dist/index.html",
-    title: "PigeonOps — Precision logistics",
+    posts:,
   )
   build_page(
     source: "pages/platform.md",
     output_directory: "dist/platform",
     output: "dist/platform/index.html",
-    title: "Platform — PigeonOps",
+    posts:,
   )
   build_page(
     source: "pages/contact.md",
     output_directory: "dist/contact",
     output: "dist/contact/index.html",
-    title: "Contact — PigeonOps",
+    posts:,
   )
+  build_page(
+    source: "pages/posts.md",
+    output_directory: "dist/posts",
+    output: "dist/posts/index.html",
+    posts:,
+  )
+  list.each(posts, build_post)
   copy_static_assets()
 
-  io.println("Generated 3 pages and static assets in dist/")
+  io.println(
+    "Generated 4 pages, "
+    <> int.to_string(list.length(posts))
+    <> " posts, and static assets in dist/",
+  )
 }
 
 fn copy_static_assets() -> Nil {
@@ -37,13 +62,92 @@ fn build_page(
   source source: String,
   output_directory output_directory: String,
   output output: String,
-  title title: String,
+  posts posts: List(Post),
 ) -> Nil {
-  let assert Ok(markdown) = simplifile.read(from: source)
-  let content = markdown |> mork.parse |> mork.to_html
-  let html = site.page(title, content)
+  let assert Ok(document) = simplifile.read(from: source)
+  let Document(title:, description:, markdown:) = parse_document(document)
+
+  let content =
+    markdown
+    |> expand_components(posts)
+    |> mork.parse
+    |> mork.to_html
+  let html = site.page(title, description, content)
 
   let assert Ok(Nil) = simplifile.create_directory_all(output_directory)
   let assert Ok(Nil) = simplifile.write(to: output, contents: html)
   Nil
+}
+
+fn load_posts() -> List(Post) {
+  let assert Ok(filenames) = simplifile.read_directory(at: "content/posts")
+
+  filenames
+  |> list.filter(string.ends_with(_, ".md"))
+  |> list.sort(string.compare)
+  |> list.map(load_post)
+}
+
+fn load_post(filename: String) -> Post {
+  let assert Ok(source) = simplifile.read(from: "content/posts/" <> filename)
+  let slug = string.drop_end(filename, 3)
+  Post(slug:, document: parse_document(source))
+}
+
+fn build_post(post: Post) -> Nil {
+  let Post(slug:, document: Document(title:, description:, markdown:)) = post
+  let output_directory = "dist/posts/" <> slug
+  let post_html =
+    markdown |> expand_components([]) |> mork.parse |> mork.to_html
+  let content = "<article class='post-content'>" <> post_html <> "</article>"
+  let html = site.page(title, description, content)
+
+  let assert Ok(Nil) = simplifile.create_directory_all(output_directory)
+  let assert Ok(Nil) =
+    simplifile.write(to: output_directory <> "/index.html", contents: html)
+  Nil
+}
+
+fn parse_document(source: String) -> Document {
+  let #(frontmatter, markdown) = mork.split_frontmatter_from_input(source)
+  let assert Ok(title) = frontmatter_value(frontmatter, "title")
+  let assert Ok(description) = frontmatter_value(frontmatter, "description")
+  Document(title:, description:, markdown:)
+}
+
+fn expand_components(markdown: String, posts: List(Post)) -> String {
+  markdown
+  |> string.replace("{{ contact-form }}", components.contact_form())
+  |> string.replace("{{ post-list }}", post_list(posts))
+}
+
+fn post_list(posts: List(Post)) -> String {
+  let cards =
+    posts
+    |> list.map(fn(post) {
+      let Post(slug:, document: Document(title:, description:, ..)) = post
+      "<article>
+        <h2><a href='/posts/" <> slug <> "/'>" <> site.escape_html(title) <> "</a></h2>
+        <p>" <> site.escape_html(description) <> "</p>
+        <a class='post-link' href='/posts/" <> slug <> "/'>Read field note <span aria-hidden='true'>→</span></a>
+      </article>"
+    })
+    |> string.join("\n")
+
+  "<div class='post-list'>" <> cards <> "</div>"
+}
+
+fn frontmatter_value(frontmatter: String, key: String) -> Result(String, Nil) {
+  frontmatter
+  |> string.split("\n")
+  |> list.find_map(fn(line) {
+    case string.split_once(line, on: ":") {
+      Ok(#(found_key, value)) ->
+        case string.trim(found_key) == key {
+          True -> Ok(string.trim(value))
+          False -> Error(Nil)
+        }
+      _ -> Error(Nil)
+    }
+  })
 }

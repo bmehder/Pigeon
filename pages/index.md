@@ -1,3 +1,8 @@
+---
+title: PigeonOps — Precision logistics
+description: Precision logistics software for people managing ambitious urban pigeons.
+---
+
 <p class='eyebrow'>The operating system for urban flight</p>
 
 # Precision logistics. Feathered workforce.
