@@ -129,13 +129,15 @@
 
   .post-list { @apply mt-14 grid gap-5 md:grid-cols-2; }
   .post-list article { @apply flex min-h-64 flex-col rounded-2xl border border-zinc-900/10 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-zinc-950/5; }
-  .post-list h2 { @apply mt-0 text-2xl tracking-tight sm:text-3xl; }
+  .post-list h2 { @apply mt-5 text-2xl tracking-tight sm:text-3xl; }
   .post-list h2 a { @apply transition hover:text-orange-600; }
   .post-list p { @apply mt-4 text-sm leading-6 text-zinc-600; }
   .post-link { @apply mt-auto pt-8 text-sm font-semibold text-orange-600; }
-  .back-link { @apply mb-10 inline-flex text-sm font-semibold text-orange-600 transition hover:text-orange-700; }
+  .post-date { @apply text-xs font-semibold tracking-wide text-zinc-400 uppercase; }
+  .post-meta { @apply mb-10 flex items-center justify-between gap-6; }
+  .back-link { @apply inline-flex text-sm font-semibold text-orange-600 transition hover:text-orange-700; }
   .post-content { @apply max-w-3xl; }
   .page-content > div > .post-content > p { @apply mt-6 max-w-3xl text-base leading-8 text-zinc-600; }
-  .page-content > div > .post-content > p:first-child { @apply mt-0; }
+  .post-content .post-date { @apply mt-0; }
   .post-content > h2 { @apply mt-14 text-3xl sm:text-4xl; }
 }

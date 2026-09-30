@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/list
 import gleam/string
 import post.{type Post, Post}
@@ -36,8 +37,9 @@ pub fn post_list(posts: List(Post)) -> String {
   let cards =
     posts
     |> list.map(fn(post) {
-      let Post(slug:, title:, description:, ..) = post
+      let Post(slug:, title:, description:, published:, ..) = post
       "<article>
+        " <> post_date(published) <> "
         <h2><a href='/posts/" <> slug <> "/'>" <> site.escape_html(title) <> "</a></h2>
         <p>" <> site.escape_html(description) <> "</p>
         <a class='post-link' href='/posts/" <> slug <> "/'>Read field note <span aria-hidden='true'>→</span></a>
@@ -46,4 +48,40 @@ pub fn post_list(posts: List(Post)) -> String {
     |> string.join("\n")
 
   "<div class='post-list'>" <> cards <> "</div>"
+}
+
+pub fn post_meta(published: String) -> String {
+  "<div class='post-meta'>
+    <a class='back-link' href='/posts/'>← All field notes</a>
+    " <> post_date(published) <> "
+  </div>"
+}
+
+fn post_date(published: String) -> String {
+  "<p class='post-date'><time datetime='"
+  <> site.escape_html(published)
+  <> "'>"
+  <> format_date(published)
+  <> "</time></p>"
+}
+
+fn format_date(published: String) -> String {
+  let assert [year, month, day] = string.split(published, on: "-")
+  let assert Ok(day) = int.parse(day)
+  let month = case month {
+    "01" -> "January"
+    "02" -> "February"
+    "03" -> "March"
+    "04" -> "April"
+    "05" -> "May"
+    "06" -> "June"
+    "07" -> "July"
+    "08" -> "August"
+    "09" -> "September"
+    "10" -> "October"
+    "11" -> "November"
+    "12" -> "December"
+    _ -> month
+  }
+  int.to_string(day) <> " " <> month <> " " <> year
 }

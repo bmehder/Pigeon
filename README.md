@@ -158,9 +158,9 @@ For example, `routes/about/index.md` automatically becomes `dist/about/index.htm
 
 ## Collections
 
-Files in `content/posts/` form the first collection. The builder discovers every Markdown file in that directory, sorts the filenames, uses each filename as its URL slug, and generates an individual page beneath `dist/posts/`.
+Files in `content/posts/` form the first collection. The builder discovers every Markdown file in that directory, uses each filename as its URL slug, sorts posts newest-first by their required ISO `published` date, and generates an individual page beneath `dist/posts/`.
 
-The same in-memory post list expands the `{{ post-list }}` placeholder in `routes/posts/index.md`. Adding a post therefore requires only a Markdown file with `title` and `description` frontmatter; no build-script entry is needed.
+The same in-memory post list expands the `{{ post-list }}` placeholder in `routes/posts/index.md`. Adding a post therefore requires only a Markdown file with `title`, `description`, and `published` frontmatter; no build-script entry is needed.
 
 ## Deployment
 

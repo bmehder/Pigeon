@@ -1,9 +1,8 @@
 ---
 title: The statue incident report
 description: Four avoidable causes of delays near monuments, fountains, and unattended sandwiches.
+published: 2026-09-29
 ---
-
-<a class='back-link' href='/posts/'>← All field notes</a>
 
 # The statue incident report
 

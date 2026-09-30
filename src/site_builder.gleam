@@ -77,27 +77,40 @@ fn load_posts() -> List(Post) {
   |> list.filter(string.ends_with(_, ".md"))
   |> list.sort(string.compare)
   |> list.map(load_post)
+  |> list.sort(by: newest_first)
 }
 
 fn load_post(filename: String) -> Post {
   let assert Ok(source) = simplifile.read(from: "content/posts/" <> filename)
   let slug = string.drop_end(filename, 3)
   let Document(title:, description:, markdown:) = parse_document(source)
-  Post(slug:, title:, description:, markdown:)
+  let #(frontmatter, _) = mork.split_frontmatter_from_input(source)
+  let assert Ok(published) = frontmatter_value(frontmatter, "published")
+  Post(slug:, title:, description:, published:, markdown:)
 }
 
 fn build_post(post: Post, replacements: List(#(String, String))) -> Nil {
-  let Post(slug:, title:, description:, markdown:) = post
+  let Post(slug:, title:, description:, published:, markdown:) = post
   let output_directory = "dist/posts/" <> slug
   let post_html =
     markdown |> expand_components(replacements) |> mork.parse |> mork.to_html
-  let content = "<article class='post-content'>" <> post_html <> "</article>"
+  let content =
+    "<article class='post-content'>"
+    <> components.post_meta(published)
+    <> post_html
+    <> "</article>"
   let html = site.page(title, description, content)
 
   let assert Ok(Nil) = simplifile.create_directory_all(output_directory)
   let assert Ok(Nil) =
     simplifile.write(to: output_directory <> "/index.html", contents: html)
   Nil
+}
+
+fn newest_first(a: Post, b: Post) {
+  let Post(published: a_date, ..) = a
+  let Post(published: b_date, ..) = b
+  string.compare(b_date, a_date)
 }
 
 fn parse_document(source: String) -> Document {

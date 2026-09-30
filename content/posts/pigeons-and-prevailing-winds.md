@@ -1,9 +1,8 @@
 ---
 title: Pigeons and prevailing winds
 description: What dispatchers should know before assigning a northern route on a blustery afternoon.
+published: 2026-09-24
 ---
-
-<a class='back-link' href='/posts/'>← All field notes</a>
 
 # Pigeons and prevailing winds
 
