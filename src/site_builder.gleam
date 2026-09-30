@@ -16,9 +16,15 @@ pub fn main() -> Nil {
     output: "dist/platform/index.html",
     title: "Platform — PigeonOps",
   )
+  build_page(
+    source: "pages/contact.md",
+    output_directory: "dist/contact",
+    output: "dist/contact/index.html",
+    title: "Contact — PigeonOps",
+  )
   copy_static_assets()
 
-  io.println("Generated 2 pages and static assets in dist/")
+  io.println("Generated 3 pages and static assets in dist/")
 }
 
 fn copy_static_assets() -> Nil {

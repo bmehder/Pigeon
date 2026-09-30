@@ -65,6 +65,7 @@ The first widget build may download the Bun executable used internally by Lustre
 │       └── pigeonops-mark.svg
 ├── pages/
 │   ├── index.md                # Homepage content
+│   ├── contact.md              # Contact page and form markup
 │   └── platform.md             # Platform page content
 ├── src/
 │   ├── site.gleam              # Shared HTML layout, header, and footer
@@ -104,6 +105,8 @@ dist/
 │   ├── pigeonops-mark.svg
 │   └── site.css
 ├── platform/
+│   └── index.html
+├── contact/
 │   └── index.html
 └── index.html
 ```
