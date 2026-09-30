@@ -1,4 +1,4 @@
-name = "site_builder"
+name = "mews"
 version = "1.0.0"
 target = "erlang"
 
@@ -6,4 +6,3 @@ target = "erlang"
 gleam_stdlib = ">= 0.44.0 and < 2.0.0"
 mork = ">= 1.12.1 and < 2.0.0"
 simplifile = ">= 2.7.0 and < 3.0.0"
-

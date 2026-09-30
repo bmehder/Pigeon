@@ -1,14 +1,10 @@
-<p align="center">
-  <img src="assets/static/pigeonops-mark.svg" width="72" height="72" alt="PigeonOps logo">
-</p>
+# Mews
 
-# PigeonOps
+A small, content-first static-site starter built with Gleam, Markdown, Tailwind CSS, and optional Lustre islands.
 
-A small, mostly-static website built with Gleam, Markdown, Tailwind CSS, and one isolated Lustre widget.
+**Demo site:** [PigeonOps](https://pigeonops.bmehder.chatgpt.site)
 
-**Live site:** [pigeonops.bmehder.chatgpt.site](https://pigeonops.bmehder.chatgpt.site)
-
-PigeonOps is a deliberately absurd fictional product: precision logistics software for ambitious urban pigeons. The implementation is a proof of concept for a more serious architectural idea—using Gleam as a straightforward static-site build tool without turning the entire website into a single-page application.
+Mews is an intentionally small reference project for using Gleam as a straightforward static-site build tool without turning the entire website into a single-page application. PigeonOps—the included demo—is a deliberately absurd fictional product offering precision logistics software for ambitious urban pigeons.
 
 ## Philosophy
 
@@ -20,7 +16,7 @@ The site favors ordinary web technologies and visible build steps:
 - Tailwind generates one static stylesheet.
 - Static files are copied directly into the generated site.
 - Lustre owns one interactive DOM island and nothing outside it.
-- The final output is ordinary HTML, CSS, SVG, PNG, and one page-specific JavaScript bundle.
+- The final output is ordinary HTML, CSS, SVG, WebP content images, a few PNG metadata assets, and one page-specific JavaScript bundle.
 
 There is no site-wide hydration, client-side router, or generalized static-site framework.
 
@@ -84,7 +80,7 @@ The first widget build may download the Bun executable used internally by Lustre
 │   ├── components.gleam        # Reusable static HTML blocks
 │   ├── collections.gleam       # Collection definitions and entry data type
 │   ├── site.gleam              # Shared HTML layout, header, and footer
-│   └── site_builder.gleam      # Markdown rendering and file generation
+│   └── mews.gleam              # Markdown rendering and file generation
 ├── widgets/
 │   ├── src/
 │   │   └── dispatch.gleam      # Isolated Lustre application

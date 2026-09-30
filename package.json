@@ -1,5 +1,5 @@
 {
-  "name": "pigeonops-site",
+  "name": "mews",
   "private": true,
   "scripts": {
     "build": "gleam run && npm run build:images && npm run build:widget && npm run build:css",
