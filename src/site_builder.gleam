@@ -1,4 +1,5 @@
 import components
+import config.{type Page, Page}
 import gleam/int
 import gleam/io
 import gleam/list
@@ -14,36 +15,17 @@ type Document {
 
 pub fn main() -> Nil {
   let posts = load_posts()
+  let pages = config.pages()
 
-  build_page(
-    source: "pages/index.md",
-    output_directory: "dist",
-    output: "dist/index.html",
-    posts:,
-  )
-  build_page(
-    source: "pages/platform.md",
-    output_directory: "dist/platform",
-    output: "dist/platform/index.html",
-    posts:,
-  )
-  build_page(
-    source: "pages/contact.md",
-    output_directory: "dist/contact",
-    output: "dist/contact/index.html",
-    posts:,
-  )
-  build_page(
-    source: "pages/posts.md",
-    output_directory: "dist/posts",
-    output: "dist/posts/index.html",
-    posts:,
-  )
+  list.each(pages, build_page)
+  build_posts_index(config.posts_index(), posts)
   list.each(posts, build_post)
   copy_static_assets()
 
   io.println(
-    "Generated 4 pages, "
+    "Generated "
+    <> int.to_string(list.length(pages) + 1)
+    <> " pages, "
     <> int.to_string(list.length(posts))
     <> " posts, and static assets in dist/",
   )
@@ -55,18 +37,28 @@ fn copy_static_assets() -> Nil {
   Nil
 }
 
-fn build_page(
-  source source: String,
-  output_directory output_directory: String,
-  output output: String,
-  posts posts: List(Post),
-) -> Nil {
+fn build_page(page: Page) -> Nil {
+  let Page(source:, output_directory:, output:) = page
+  let assert Ok(document) = simplifile.read(from: source)
+  let Document(title:, description:, markdown:) = parse_document(document)
+
+  let content = markdown |> expand_components |> mork.parse |> mork.to_html
+  let html = site.page(title, description, content)
+
+  let assert Ok(Nil) = simplifile.create_directory_all(output_directory)
+  let assert Ok(Nil) = simplifile.write(to: output, contents: html)
+  Nil
+}
+
+fn build_posts_index(page: Page, posts: List(Post)) -> Nil {
+  let Page(source:, output_directory:, output:) = page
   let assert Ok(document) = simplifile.read(from: source)
   let Document(title:, description:, markdown:) = parse_document(document)
 
   let content =
     markdown
-    |> expand_components(posts)
+    |> expand_components
+    |> string.replace("{{ post-list }}", components.post_list(posts))
     |> mork.parse
     |> mork.to_html
   let html = site.page(title, description, content)
@@ -95,8 +87,7 @@ fn load_post(filename: String) -> Post {
 fn build_post(post: Post) -> Nil {
   let Post(slug:, title:, description:, markdown:) = post
   let output_directory = "dist/posts/" <> slug
-  let post_html =
-    markdown |> expand_components([]) |> mork.parse |> mork.to_html
+  let post_html = markdown |> expand_components |> mork.parse |> mork.to_html
   let content = "<article class='post-content'>" <> post_html <> "</article>"
   let html = site.page(title, description, content)
 
@@ -113,10 +104,9 @@ fn parse_document(source: String) -> Document {
   Document(title:, description:, markdown:)
 }
 
-fn expand_components(markdown: String, posts: List(Post)) -> String {
+fn expand_components(markdown: String) -> String {
   markdown
   |> string.replace("{{ contact-form }}", components.contact_form())
-  |> string.replace("{{ post-list }}", components.post_list(posts))
 }
 
 fn frontmatter_value(frontmatter: String, key: String) -> Result(String, Nil) {

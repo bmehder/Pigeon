@@ -72,6 +72,7 @@ The first widget build may download the Bun executable used internally by Lustre
 │   └── posts.md                # Collection index content
 ├── src/
 │   ├── components.gleam        # Reusable static HTML blocks
+│   ├── config.gleam            # Explicit standalone page configuration
 │   ├── post.gleam              # Shared post data type
 │   ├── site.gleam              # Shared HTML layout, header, and footer
 │   └── site_builder.gleam      # Markdown rendering and file generation
@@ -148,7 +149,7 @@ The homepage contains one mount point and one page-specific module script:
 Standalone pages are intentionally explicit:
 
 1. Add a Markdown file beneath `pages/`.
-2. Add one `build_page` call in `src/site_builder.gleam` with its source and output path.
+2. Add one `Page` entry to `src/config.gleam` with its source and output path.
 3. Add navigation to it where appropriate.
 
 That repetition is intentional for now. It keeps the mechanism obvious until the project has enough pages to justify metadata parsing or automatic discovery.
